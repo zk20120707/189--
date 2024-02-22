@@ -3,11 +3,14 @@ name: 签到
 on: 
   schedule:
     - cron: '*/10 * * * *'
+  watch:
+    types: started
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    if: github.event_name == 'schedule' || github.event_name == 'watch' && github.event.repository.owner.id == github.event.sender.id
+    
     steps:
     - uses: actions/checkout@v2
     - name: 初始化Python
