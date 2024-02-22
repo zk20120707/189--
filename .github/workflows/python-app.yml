@@ -2,7 +2,7 @@ name: 签到2
 
 on: 
   schedule:
-    - cron: '08 11,6 * * *'
+    - cron: '09 11,6 * * *'
   watch:
     types: started
 
