@@ -26,6 +26,8 @@ jobs:
         curl -s ifconfig.me
         echo ' '
         
+        echo $(date +%T)
+        
         user='${{ secrets.USER }}'
         pwd='${{ secrets.PWD }}'
         
