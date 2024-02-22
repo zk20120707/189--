@@ -1,8 +1,10 @@
 name: 签到
 
-on: 
+on:
+  # github定时工作流，但时间不是东八区。东0区，北京时间减8小时。
   schedule:
     - cron: '20 22,6 * * *'
+  # 点击star收藏，则手动执行此github工作流
   watch:
     types: started
 
@@ -21,6 +23,8 @@ jobs:
       run: |
         pip install -r requirements.txt
     - name: 执行签到
+      # USER 和PWD参数支持多个 ，读取进user_list 和 pwd_list 。参数之间分隔符是'\n'换行【第40行】
+      # 第65行运行py签到文件
       run: |
         echo -n "This IP is: " 
         curl -s ifconfig.me
@@ -34,7 +38,7 @@ jobs:
         user_list=()
         pwd_list=()
 
-        IFS=$'\n'
+        IFS=$'\n'     
 
         for u in ${user[*]}
         do
