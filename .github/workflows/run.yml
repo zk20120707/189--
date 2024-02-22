@@ -2,7 +2,7 @@ name: 签到
 
 on: 
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '20 22,6 * * *'
   watch:
     types: started
 
