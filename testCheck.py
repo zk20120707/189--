@@ -1,3 +1,5 @@
+import threading
+
 import requests, time, re, rsa, json, base64
 from urllib import parse
 
@@ -44,8 +46,7 @@ def loadAppConf(r):
     g_conf.update(r["data"])
 
 
-def main():
-    login(username, password)
+def send_checkin(i):
     rand = str(round(time.time() * 1000))
     surl = f"https://api.cloud.189.cn/mkt/userSign.action?rand={rand}&clientType=TELEANDROID&version=8.6.3&model=SM-G930K"
     url = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN"
@@ -56,14 +57,48 @@ def main():
         "Host": "m.cloud.189.cn",
         "Accept-Encoding": "gzip, deflate",
     }
-    # 发送请求，执行签到
-    response = s.get(surl, headers=headers)
-    netdiskBonus = response.json()["netdiskBonus"]
-    if response.json()["isSign"] == "false":
-        print(f"签到成功！获得{netdiskBonus}M空间")
-    else:
-        print(f"今天已经签到过了，获得{netdiskBonus}M空间")
-    # 签到，已失效
+    try:
+        # ss = requests.Session()  # 每个线程独立的 Session
+        response = s.get(surl, headers=headers)
+        print(f"线程{i} 返回状态码: {response.status_code}")
+        netdiskBonus = response.json()["netdiskBonus"]
+        if response.json()["isSign"] == "false":
+            print(f"签到成功！获得{netdiskBonus}M空间")
+        else:
+            print(f"今天已经签到过了，获得{netdiskBonus}M空间")
+    except Exception as e:
+        print(f"线程{i} 出错: {e}")
+
+
+
+def main():
+    login(username, password)
+    rand = str(round(time.time() * 1000))
+    # surl = f"https://api.cloud.189.cn/mkt/userSign.action?rand={rand}&clientType=TELEANDROID&version=8.6.3&model=SM-G930K"
+    # url = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN"
+    # url2 = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN_PHOTOS&activityId=ACT_SIGNIN"
+    # headers = {
+    #     "User-Agent": "Mozilla/5.0 (Linux; Android 5.1.1; SM-G930K Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36 Ecloud/8.6.3 Android/22 clientId/355325117317828 clientModel/SM-G930K imsi/460071114317824 clientChannelId/qq proVersion/1.0.6",
+    #     "Referer": "https://m.cloud.189.cn/zhuanti/2016/sign/index.jsp?albumBackupOpened=1",
+    #     "Host": "m.cloud.189.cn",
+    #     "Accept-Encoding": "gzip, deflate",
+    # }
+
+
+    threads = []
+    thread_count = 5  # 并发数
+
+    for i in range(thread_count):
+        t = threading.Thread(target=send_checkin, args=(i,))
+        threads.append(t)
+        t.start()
+
+    for t in threads:
+        t.join()
+
+    print("所有请求发送完毕")
+
+    # 抽奖 已经失效
     # lott(url, headers)
     # lott(url2, headers)
 
