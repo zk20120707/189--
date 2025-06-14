@@ -24,7 +24,7 @@ jobs:
         pip install -r requirements.txt
     - name: 执行签到
       # USER 和PWD参数支持多个 ，读取进user_list 和 pwd_list 。参数之间分隔符是'\n'换行【第40行】
-      # 第65行运行py签到文件
+      # 第65行运行py签到文件 ：checkin.py只签一次 ；check_multi.py 多线程签多次
       run: |
         echo -n "This IP is: " 
         curl -s ifconfig.me
@@ -62,7 +62,7 @@ jobs:
 
         for ((i=0;i<$user_num;i++))
         do
-        python3 testCheck.py <<EOF
+        python3 checkin_multi.py <<EOF
         ${user_list[$i]}
         ${pwd_list[$i]}
         EOF
