@@ -1,4 +1,5 @@
 import threading
+import traceback
 
 import requests, time, re, rsa, json, base64
 from urllib import parse
@@ -8,6 +9,8 @@ ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/
 
 username = ""
 password = ""
+PUSH_TOKEN = ""
+
 
 if username == "" or password == "":
     username = input("账号：")
@@ -70,7 +73,6 @@ def send_checkin(i):
         print(f"线程{i} 出错: {e}")
 
 
-
 def main():
     login(username, password)
     # rand = str(round(time.time() * 1000))
@@ -83,7 +85,6 @@ def main():
     #     "Host": "m.cloud.189.cn",
     #     "Accept-Encoding": "gzip, deflate",
     # }
-
 
     threads = []
     thread_count = 5  # 并发数
@@ -223,5 +224,21 @@ def lott(url, headers):
             print("抽奖异常：" + response.text())
 
 
+# 消息推送微信pushplus：需要1元实名认证费用
+def send_wx_msg(p_token, title, content):
+    if p_token is None:
+        return
+    url = 'http://www.pushplus.plus/send'
+    r = requests.get(url, params={'token': p_token,
+                                  'title': title,
+                                  'content': content})
+    print(f'微信推送结果：{r.status_code, r.text}')
+
+
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)
+        traceback.print_exc()
+        send_wx_msg(PUSH_TOKEN, '天翼签到报错', f'请检查{e}')
