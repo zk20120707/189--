@@ -35,8 +35,8 @@ jobs:
         user='${{ secrets.USER }}'
         pwd='${{ secrets.PWD }}'
         PUSH_TOKEN='${{ secrets.PUSH_TOKEN }}'
-        PUSH_TOKEN='${{ secrets.BOT_TOKEN }}'
-        PUSH_TOKEN='${{ secrets.CHAT_ID }}'
+        BOT_TOKEN='${{ secrets.BOT_TOKEN }}'
+        CHAT_ID='${{ secrets.CHAT_ID }}'
         
         user_list=()
         pwd_list=()
