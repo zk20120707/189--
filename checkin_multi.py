@@ -11,23 +11,27 @@ ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/
 username = ""
 password = ""
 PUSH_TOKEN = ""
-
+BOT_TOKEN = ""
+CHAT_ID = ""
 
 # if username == "" or password == "":
 #     username = input("账号：")
 #     password = input("密码：")
 
-if sys.stdin.isatty(): # 检查是否在交互式终端运行 (例如本地执行)
+if sys.stdin.isatty():  # 检查是否在交互式终端运行 (例如本地执行)
     if username == "" or password == "":
         username = input("账号：")
         password = input("密码：")
-    PUSH_TOKEN = input("PUSH_TOKEN (optional):") # 如果是交互式，则提示输入PUSH_TOKEN
-else: # 如果不是交互式 (例如GitHub Actions)
+    PUSH_TOKEN = input("PUSH_TOKEN (optional):")  # 如果是交互式，则提示输入PUSH_TOKEN
+    BOT_TOKEN = input("BOT_TOKEN (optional):")
+    CHAT_ID = input("CHAT_ID (optional):")
+else:  # 如果不是交互式 (例如GitHub Actions)
     # 从stdin读取，假设run.yml中输入的顺序是固定的
     username = sys.stdin.readline().strip()
     password = sys.stdin.readline().strip()
     PUSH_TOKEN = sys.stdin.readline().strip()
-    print(PUSH_TOKEN)
+    BOT_TOKEN = sys.stdin.readline().strip()
+    CHAT_ID = sys.stdin.readline().strip()
 
 g_conf = {}
 
@@ -239,7 +243,7 @@ def lott(url, headers):
 
 # 消息推送微信pushplus：需要1元实名认证费用
 def send_wx_msg(title, content):
-    if PUSH_TOKEN is None or PUSH_TOKEN == "":  # 检查PUSH_TOKEN是否为空或None
+    if PUSH_TOKEN is None or PUSH_TOKEN == "":
         print("PUSH_TOKEN未设置，跳过微信推送。")
         return
     url = 'http://www.pushplus.plus/send'
@@ -249,10 +253,28 @@ def send_wx_msg(title, content):
     print(f'微信推送结果：{r.status_code, r.text}')
 
 
+# 推送tg消息
+def send_telegram_message(message):
+    if not BOT_TOKEN or not CHAT_ID or BOT_TOKEN == "" or CHAT_ID == "":
+        print('没有配置tg机器人，无法推送')
+        return
+    tg_url = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+    data = {
+        "chat_id": CHAT_ID,
+        "text": message
+    }
+    response = requests.post(tg_url, json=data)
+    if response.status_code == 200:
+        print("tg消息推送成功!")
+    else:
+        print("Failed to send message. Status code:", response.status_code)
+
+
 if __name__ == "__main__":
     try:
         main()
     except Exception as e:
         print(e)
         traceback.print_exc()
-        send_wx_msg('天翼签到报错', f'请检查{e}')
+        send_wx_msg('天翼签到报错', f'请检查,{username} {e}')
+        send_telegram_message(f'天翼签到报错,请检查 {username}{e}')
