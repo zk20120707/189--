@@ -15,6 +15,7 @@ PUSH_TOKEN = ""
 if username == "" or password == "":
     username = input("账号：")
     password = input("密码：")
+    PUSH_TOKEN = input("PUSH_TOKEN：")
 
 g_conf = {}
 
@@ -225,11 +226,11 @@ def lott(url, headers):
 
 
 # 消息推送微信pushplus：需要1元实名认证费用
-def send_wx_msg(p_token, title, content):
-    if p_token is None:
+def send_wx_msg(title, content):
+    if PUSH_TOKEN is None:
         return
     url = 'http://www.pushplus.plus/send'
-    r = requests.get(url, params={'token': p_token,
+    r = requests.get(url, params={'token': PUSH_TOKEN,
                                   'title': title,
                                   'content': content})
     print(f'微信推送结果：{r.status_code, r.text}')
@@ -241,4 +242,4 @@ if __name__ == "__main__":
     except Exception as e:
         print(e)
         traceback.print_exc()
-        send_wx_msg(PUSH_TOKEN, '天翼签到报错', f'请检查{e}')
+        send_wx_msg('天翼签到报错', f'请检查{e}')
