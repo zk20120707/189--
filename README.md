@@ -32,6 +32,9 @@
 123123
 
 
+如果有需要报错时消息推送，可以自行新增**PUSH_TOKEN**、**BOT_TOKEN** 、**CHAT_ID**的变量，值分别为 **PUSHPLUS微信推送token**、**TG机器人token **、**TG聊天id**
+（预留了两个方式推送，选择PUSHPLUS或者tg之一即可。）
+
 
 
 ### 三、启用 Action
