@@ -1,0 +1,41 @@
+# github actions的yml配置文件
+name: clearStockEarn
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  schedule:
+    # IMPORTANT: Set cron job in UTC timezone 。+8才是北京时间，每天10点05分
+    - cron: '20 22,6 * * *'
+  watch:
+    types: started
+
+
+jobs:
+  run-python-script:
+    runs-on: ubuntu-latest
+    # 自己点击star则运行此workflow
+    if: github.event_name == 'schedule' || github.event_name == 'watch' && github.event.repository.owner.id == github.event.sender.id
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: start run
+        env:
+          USERS: ${{ secrets.USER }}
+          PWDS: ${{ secrets.PWD }}
+          PUSH_TOKEN: ${{ secrets.PUSH_TOKEN }}
+
+        run: python checkin_multi_bak.py
+
+
+
+
+

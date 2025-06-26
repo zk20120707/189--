@@ -59,7 +59,6 @@ jobs:
         exit 1
         else
         echo "共有 $user_num 个账号，即将开始签到"
-        echo " $PUSH_TOKEN ，即将开始"
         fi
 
         for ((i=0;i<$user_num;i++))

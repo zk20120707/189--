@@ -1,4 +1,4 @@
-import sys
+import os
 import threading
 import traceback
 
@@ -8,26 +8,14 @@ from urllib import parse
 s = requests.Session()
 ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:74.0) Gecko/20100101 Firefox/76.0"
 
-username = ""
-password = ""
-PUSH_TOKEN = ""
-
-
+# username = ""
+# password = ""
+#
+#
+#
 # if username == "" or password == "":
 #     username = input("账号：")
 #     password = input("密码：")
-
-if sys.stdin.isatty(): # 检查是否在交互式终端运行 (例如本地执行)
-    if username == "" or password == "":
-        username = input("账号：")
-        password = input("密码：")
-    PUSH_TOKEN = input("PUSH_TOKEN (optional):") # 如果是交互式，则提示输入PUSH_TOKEN
-else: # 如果不是交互式 (例如GitHub Actions)
-    # 从stdin读取，假设run.yml中输入的顺序是固定的
-    username = sys.stdin.readline().strip()
-    password = sys.stdin.readline().strip()
-    PUSH_TOKEN = sys.stdin.readline().strip()
-    print(PUSH_TOKEN)
 
 g_conf = {}
 
@@ -87,34 +75,62 @@ def send_checkin(i):
 
 
 def main():
-    login(username, password)
-    # rand = str(round(time.time() * 1000))
-    # surl = f"https://api.cloud.189.cn/mkt/userSign.action?rand={rand}&clientType=TELEANDROID&version=8.6.3&model=SM-G930K"
-    # url = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN"
-    # url2 = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN_PHOTOS&activityId=ACT_SIGNIN"
-    # headers = {
-    #     "User-Agent": "Mozilla/5.0 (Linux; Android 5.1.1; SM-G930K Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36 Ecloud/8.6.3 Android/22 clientId/355325117317828 clientModel/SM-G930K imsi/460071114317824 clientChannelId/qq proVersion/1.0.6",
-    #     "Referer": "https://m.cloud.189.cn/zhuanti/2016/sign/index.jsp?albumBackupOpened=1",
-    #     "Host": "m.cloud.189.cn",
-    #     "Accept-Encoding": "gzip, deflate",
-    # }
+    # 从环境变量中读取 USER 和 PWD，它们是换行符分割的字符串
+    users_str = os.getenv('USERS')
+    pwds_str = os.getenv('PWDS')
+    push_token = os.getenv('PUSH_TOKEN')
 
-    threads = []
-    thread_count = 5  # 并发数
+    if not users_str or not pwds_str or not push_token:
+        print("错误：缺少必要的敏感信息。请检查 GitHub Secrets 配置。")
+        return
 
-    for i in range(thread_count):
-        t = threading.Thread(target=send_checkin, args=(i,))
-        threads.append(t)
-        t.start()
+    # 将 USER 和 PWD 字符串按换行符分割成列表
+    users = users_str.split('\n')
+    passwords = pwds_str.split('\n')
 
-    for t in threads:
-        t.join()
+    # 检查用户和密码列表的长度是否一致
+    if len(users) != len(passwords):
+        print("错误：USER 和 PWD 数量不匹配，请检查配置。")
+        return
 
-    print("所有请求发送完毕")
+    # 打印（或使用）这些信息，仅用于演示。
+    # 在实际应用中，你不会直接打印敏感信息。
+    print("成功读取敏感信息！")
+    print(f"检测到 {len(users)} 对用户和密码。")
+    print(f"推送令牌的长度：{len(push_token)} (实际值不显示)")
 
-    # 抽奖 已经失效
-    # lott(url, headers)
-    # lott(url2, headers)
+    for i in range(len(users)):
+        user = users[i].strip()  # 移除可能存在的空白符
+        password = passwords[i].strip()  # 移除可能存在的空白符
+        print(f"处理用户: {user}, 密码: {'*' * len(password)}")  # 隐藏密码
+        login(user, password)
+        # rand = str(round(time.time() * 1000))
+        # surl = f"https://api.cloud.189.cn/mkt/userSign.action?rand={rand}&clientType=TELEANDROID&version=8.6.3&model=SM-G930K"
+        # url = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN&activityId=ACT_SIGNIN"
+        # url2 = f"https://m.cloud.189.cn/v2/drawPrizeMarketDetails.action?taskId=TASK_SIGNIN_PHOTOS&activityId=ACT_SIGNIN"
+        # headers = {
+        #     "User-Agent": "Mozilla/5.0 (Linux; Android 5.1.1; SM-G930K Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/74.0.3729.136 Mobile Safari/537.36 Ecloud/8.6.3 Android/22 clientId/355325117317828 clientModel/SM-G930K imsi/460071114317824 clientChannelId/qq proVersion/1.0.6",
+        #     "Referer": "https://m.cloud.189.cn/zhuanti/2016/sign/index.jsp?albumBackupOpened=1",
+        #     "Host": "m.cloud.189.cn",
+        #     "Accept-Encoding": "gzip, deflate",
+        # }
+
+        threads = []
+        thread_count = 5  # 并发数
+
+        for i in range(thread_count):
+            t = threading.Thread(target=send_checkin, args=(i,))
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join()
+
+        print("所有请求发送完毕")
+
+        # 抽奖 已经失效
+        # lott(url, headers)
+        # lott(url2, headers)
 
 
 BI_RM = list("0123456789abcdefghijklmnopqrstuvwxyz")
@@ -238,15 +254,18 @@ def lott(url, headers):
 
 
 # 消息推送微信pushplus：需要1元实名认证费用
-def send_wx_msg(title, content):
-    if PUSH_TOKEN is None or PUSH_TOKEN == "":  # 检查PUSH_TOKEN是否为空或None
-        print("PUSH_TOKEN未设置，跳过微信推送。")
+def send_wx_msg(push_token,title, content):
+    if push_token is None:
         return
     url = 'http://www.pushplus.plus/send'
-    r = requests.get(url, params={'token': PUSH_TOKEN,
+    r = requests.get(url, params={'token': push_token,
                                   'title': title,
                                   'content': content})
     print(f'微信推送结果：{r.status_code, r.text}')
+
+
+
+
 
 
 if __name__ == "__main__":
